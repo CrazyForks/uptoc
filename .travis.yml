@@ -20,6 +20,6 @@ deploy:
     api_key: $GITHUB_TOKEN
     skip_cleanup: true
     file:
-      - build/*.tar.gz
+      - build/targz/*
     on:
       tags: true

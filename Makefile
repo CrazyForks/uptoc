@@ -1,12 +1,15 @@
 .PHONY: default install build fmt test vet docker clean
 
 
-BINARY=uptoc
+PROJECT=uptoc
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR := $(dir $(MKFILE_PATH))
 
 TARGET_DIR=${MKFILE_DIR}build
-TARGET_PATH=${TARGET_DIR}/${BINARY}
+TARGET_PREFIX=${TARGET_DIR}/${PROJECT}
+
+TARGZ_DIR=${TARGET_DIR}/targz
+TARGZ_PREFIX=${TARGZ_DIR}/${PROJECT}
 
 LDFLAGS="-s -w -X ${BINARY}/version.release=${RELEASE} -X ${BINARY}/version.commit=${COMMIT} -X ${BINARY}/version.repo=${GITREPO}"
 
@@ -21,9 +24,9 @@ install:
 	go mod download
 
 build:
-	GOOS=linux GOARCH=amd64 go build -ldflags ${LDFLAGS} -o ${TARGET_PATH}-linux-amd64/${BINARY}
-	GOOS=darwin GOARCH=amd64 go build -ldflags ${LDFLAGS} -o ${TARGET_PATH}-darwin-amd64/${BINARY}
-	GOOS=windows GOARCH=amd64 go build -ldflags ${LDFLAGS} -o ${TARGET_PATH}-windows-amd64/${BINARY}
+	GOOS=linux GOARCH=amd64 go build -ldflags ${LDFLAGS} -o ${TARGET_PREFIX}-linux-amd64/${PROJECT}
+	GOOS=darwin GOARCH=amd64 go build -ldflags ${LDFLAGS} -o ${TARGET_PREFIX}-darwin-amd64/${PROJECT}
+	GOOS=windows GOARCH=amd64 go build -ldflags ${LDFLAGS} -o ${TARGET_PREFIX}-windows-amd64/${PROJECT}
 
 test:
 	go test -coverprofile=coverage.txt -covermode=atomic ./...
@@ -33,9 +36,10 @@ covhtml:
 	go tool cover -html=coverage.txt
 
 pack:
-	tar -C ${TARGET_DIR} -zvcf ${TARGET_PATH}-linux-amd64.tar.gz ${BINARY}-linux-amd64/${BINARY}
-	tar -C ${TARGET_DIR} -zvcf ${TARGET_PATH}-darwin-amd64.tar.gz ${BINARY}-darwin-amd64/${BINARY}
-	tar -C ${TARGET_DIR} -zvcf ${TARGET_PATH}-windows-amd64.tar.gz ${BINARY}-windows-amd64/${BINARY}
+	mkdir -p ${TARGZ_DIR}
+	tar -C ${TARGET_DIR} -zvcf ${TARGZ_PREFIX}-linux-amd64.tar.gz ${PROJECT}-linux-amd64/${PROJECT}
+	tar -C ${TARGET_DIR} -zvcf ${TARGZ_PREFIX}-darwin-amd64.tar.gz ${PROJECT}-darwin-amd64/${PROJECT}
+	tar -C ${TARGET_DIR} -zvcf ${TARGZ_PREFIX}-windows-amd64.tar.gz ${PROJECT}-windows-amd64/${PROJECT}
 
 clean:
 	rm -rf ${TARGET_DIR}
